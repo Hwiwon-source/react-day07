@@ -1,0 +1,24 @@
+.WeatherBox {
+  /* border: 3px solid blue; */
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 50px;
+  text-align: center;
+  color: #fff;
+}
+
+.WeatherBox .WeatherBox-temp {
+  margin: 0;
+  font-size: 4rem;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+.WeatherBox .WeatherBox-description {
+  font-size: 1.5rem;
+}
+
+.WeatherBox .WeatherBox-high-low-temp{
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}

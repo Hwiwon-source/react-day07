@@ -1,0 +1,2 @@
+날씨 앱 api key
+40dfb5a1dbf7cfab7100e3ad03bee78e
