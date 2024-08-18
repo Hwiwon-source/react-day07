@@ -1,68 +1,85 @@
-import React from "react";
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import WeatherBox from "./WeatherBox";
 import WeatherButtonBox from "./WeatherButtonBox";
+import ClipLoader from "react-spinners/ClipLoader";
 import "./WeatherApp.css";
 
 const WeatherApp = () => {
   const Api_key = "40dfb5a1dbf7cfab7100e3ad03bee78e";
   const [weather, setWeather] = useState(null);
   const [city, setCity] = useState(null);
+  const [selectedCity, setSelectedCity] = useState(null);
+  const [loading, setLoading] = useState(false);
   const cities = ["Tokyo", "Seoul", "New york", "Paris", "Hanoi"];
 
-  // const getCurrentLocation = () => {
-  //   navigator.geolocation.getCurrentPosition((position) => {
-  //     let lat = position.coords.latitude;
-  //     let lon = position.coords.longitude;
-  //     getWeatherByCurrentLocation(lat, lon);
-  //   });
-  // };
-  // study에서 해결방법을 체크하고 온 부분
+  const getWeatherByCurrentLocation = useCallback(async (lat, lon) => {
+    try {
+      setLoading(true);
+      let url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${Api_key}`;
+      let response = await fetch(url);
+      let data = await response.json();
+      setWeather(data);
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
+    }
+  }, []);
+
   const getCurrentLocation = useCallback(() => {
     navigator.geolocation.getCurrentPosition((position) => {
       let lat = position.coords.latitude;
       let lon = position.coords.longitude;
       getWeatherByCurrentLocation(lat, lon);
     });
-  }, []);
+  }, [getWeatherByCurrentLocation]);
 
-  const getWeatherByCurrentLocation = async (lat, lon) => {
-    let url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${Api_key}`;
-    let response = await fetch(url);
-    let data = await response.json();
-    setWeather(data);
-  };
+  const getWeatherByCity = useCallback(async () => {
+    try {
+      let url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${Api_key}`;
+      setLoading(true);
+      let response = await fetch(url);
+      let data = await response.json();
+      setWeather(data);
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
+    }
+  }, [city]);
 
-  // const getWeatherByCity = async () => {
-  //   let url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${Api_key}`;
-  //   let response = await fetch(url);
-  //   let data = await response.json();
-  //   // console.log(data);
-  //   setWeather(data);
-  // };
-
-  // render이후에 useEffect내 함수 곧바로 실행 (componentDidMount)
-  useEffect(() => {
-    // 상황에 맞춰서 useEffect호출 통제
-    if (!city) {
-      // console.log("city값이 없을때 실행");
+  const handleChangeCity = (selectedCity) => {
+    if (selectedCity === "current") {
+      setCity(null);
       getCurrentLocation();
     } else {
-      // console.log("city값이 있을때 실행");
-      // getWeatherByCity();
+      setCity(selectedCity);
     }
-  }, [city, getCurrentLocation]);
+    setSelectedCity(selectedCity);
+  };
 
-  // render이후, city값 update될때 함수 곧바로 실행 (componentDidUpdate)
-  // useEffect(() => {
-  //   // console.log("city?", city);
-  //   getWeatherByCity();
-  // }, [city]);
+  useEffect(() => {
+    if (city === null || city === "current") {
+      getCurrentLocation();
+    } else {
+      getWeatherByCity();
+    }
+  }, [city, getCurrentLocation, getWeatherByCity]);
 
   return (
-    <div className="WeatherApp">
-      <WeatherBox weather={weather} />
-      <WeatherButtonBox cities={cities} setCity={setCity} />
+    <div>
+      {loading ? (
+        <ClipLoader color="#fdbb2d" loading={loading} size={200} />
+      ) : (
+        <div className="WeatherApp">
+          <WeatherBox weather={weather} />
+          <WeatherButtonBox
+            cities={cities}
+            handleChangeCity={handleChangeCity}
+            selectedCity={selectedCity}
+          />
+        </div>
+      )}
     </div>
   );
 };
